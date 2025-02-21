@@ -1,23 +1,29 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors(); 
-  app.useGlobalPipes(new ValidationPipe()); 
-  await app.listen(3000, '0.0.0.0');
-  
-  const routes = app.getHttpAdapter().getInstance()._router.stack;
-  
-  console.log('Available routes:');
-  
-  routes.forEach(route => {
-    if (route.route) {
-      console.log(`${route.route.stack[0].method.toUpperCase()} ${route.route.path}`);
-    }
-  });
 
-  console.log('Application is running on: http://localhost:3000');
+  app.use(cors({
+    origin: 'http://localhost:5173', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    allowedHeaders: ['Content-Type', 'Authorization'], 
+    credentials: true, 
+  }));
+
+  const config = new DocumentBuilder()
+    .setTitle('My API') 
+    .setDescription('The API description')
+    .setVersion('1.0')  
+    .addBearerAuth()  
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api', app, document);
+
+  await app.listen(3000);
 }
 bootstrap();
