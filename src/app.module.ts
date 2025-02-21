@@ -5,26 +5,32 @@ import { AuthModule } from './Auth/auth.module';
 import { User } from './Users/user.entity'; 
 import { JwtModule } from '@nestjs/jwt'; 
 import { JwtStrategy } from './Auth/jwt.strategy';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT), 
-      username: process.env.DB_USER, 
-      password: process.env.DB_PASSWORD, 
-      database: process.env.DB_NAME, 
-      entities: [User], 
-      synchronize: true, 
+      host: process.env.POSTGRES_HOST,
+      port: Number(process.env.POSTGRES_PORT),
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
+      entities: [User],
+      synchronize: true,
+      ssl: {
+        rejectUnauthorized: false,  
+      },
     }),
-    UsersModule, 
+    UsersModule,
     AuthModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'default_secret',
-      signOptions: { expiresIn: '1h' }, 
+      signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [JwtStrategy], 
+  controllers: [AppController],
+  providers: [AppService, JwtStrategy],
 })
 export class AppModule {}
